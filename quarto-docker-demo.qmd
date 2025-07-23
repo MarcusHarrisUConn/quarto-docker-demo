@@ -3,8 +3,17 @@ title: "quarto-docker-demo"
 format: 
   html:
       toc: true 
-  pdf: 
-      toc: true 
+  pdf:
+    toc: true
+    number-sections: true
+    mainfont: Times New Roman
+    fontsize: 12pt
+    linestretch: 2
+    fig-format: png
+    keep-tex: true
+    header-includes: |
+      \usepackage{indentfirst}
+      \setlength{\parindent}{3em}
 ---
 
 ## Summary of `mtcars` dataset
@@ -16,5 +25,7 @@ summary(mtcars)
 
 ```{r}
 
+library(ggplot2)
+ggplot(mtcars, aes(x = wt, y = mpg)) + geom_point()
 
 ```
