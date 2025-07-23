@@ -1,68 +1,154 @@
 # Quarto Docker Demo
 
-This project demonstrates how to create a reproducible RStudio and Quarto environment using Docker.
+A minimal, reproducible R + Quarto workflow packaged in Docker. Run RStudio Server in your browser, render to HTML/PDF, and share the exact environment across Windows, macOS, and Linux.
 
-## 🔧 Project Overview
+---
 
-This repo includes:
-- A `Dockerfile` to create an RStudio + Quarto environment
-- A sample Quarto document (`quarto-docker-demo.qmd`)
-- Rendered outputs: HTML and PDF
-- Project-specific packages tracked via `renv`
-- A `.dockerignore` and `.gitignore` to manage what gets built and committed
+## 🚀 Quick Start (Prebuilt Image — No Build Needed)
 
-## 🐳 Option 1: Run Pre-Built Docker Image (Fastest)
+### Prereqs
+- Install & start **Docker Desktop** (whale icon running).
+- Internet connection (first pull only).
 
-If you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed, run this in your terminal:
+### Steps (Windows PowerShell, macOS, or Linux Terminal)
 
-docker run -e PASSWORD=pass123 -p 8787:8787 marcusharrisuconn/quarto-docker-demo
+1. Open a terminal (PowerShell on Windows, Terminal on macOS/Linux).  
+2. Run:
 
-Then visit: [http://localhost:8787](http://localhost:8787)  
-Login credentials:
-- Username: `rstudio`
-- Password: `pass123`
+   ```bash
+   docker run -d -p 8787:8787 -e PASSWORD=pass123 --name rstudio-demo marcusharrisuconn/quarto-docker-demo:latest
+   ```
 
-You’ll find the project under `/home/rstudio`.
+3. Visit <http://localhost:8787>  
+   **Username:** `rstudio` **Password:** `pass123`
 
-## 🛠 Option 2: Build the Image Yourself (From This Repo)
+> **Note:** This quick run **does not save work to your computer**. Anything you create stays inside the container. To save to your machine, see “Mount your project folder” below.
 
+---
+
+## 📂 What Does “Mounting Your Project Folder” Mean?
+
+Mounting links a folder on *your computer* to a folder *inside the container*.  
+Result: anything you save in `/home/rstudio/project` (inside RStudio) is actually saved to your local disk.
+
+### Why mount?
+- Keep outputs, .Rds files, rendered PDFs/HTML, etc. on your computer.
+- Avoid losing work when you remove the container.
+
+### How to mount
+
+**Stop & remove the quick-start container first (if running):**
+
+```bash
+docker stop rstudio-demo
+docker rm rstudio-demo
+```
+
+Now, from **inside your project folder** (the one with your `.qmd` file), run **one** of these (pick your shell):
+
+**macOS / Linux (bash/zsh):**
+```bash
+docker run -d -p 8787:8787 -e PASSWORD=pass123 \
+  -v "$(pwd):/home/rstudio/project" \
+  --name rstudio-demo \
+  marcusharrisuconn/quarto-docker-demo:latest
+```
+
+**Windows PowerShell:**
+```powershell
+docker run -d -p 8787:8787 -e PASSWORD=pass123 `
+  -v "${PWD}:/home/rstudio/project" `
+  --name rstudio-demo `
+  marcusharrisuconn/quarto-docker-demo:latest
+```
+
+**Windows CMD:**
+```cmd
+docker run -d -p 8787:8787 -e PASSWORD=pass123 -v "%cd%:/home/rstudio/project" --name rstudio-demo marcusharrisuconn/quarto-docker-demo:latest
+```
+
+Open <http://localhost:8787>, log in, and go to **/home/rstudio/project**. You should see your repo files. Anything you save there shows up on your host machine.
+
+---
+
+## 🛠 Build the Image Yourself (From This Repo)
+
+If you want to build (rather than pull) the image:
+
+```bash
 git clone https://github.com/MarcusHarrisUConn/quarto-docker-demo.git
 cd quarto-docker-demo
 docker build -t quarto-docker-demo .
-docker run -e PASSWORD=pass123 -p 8787:8787 -v "${PWD}:/home/rstudio/project" --name rstudio-container quarto-docker-demo
+```
 
+Run it with mounting (pick your shell syntax from above, just swap the image name):
 
-## 🧪 Repository Contents
+```bash
+docker run -d -p 8787:8787 -e PASSWORD=pass123 \
+  -v "$(pwd):/home/rstudio/project" \
+  --name rstudio-demo \
+  quarto-docker-demo
+```
 
-- `quarto-docker-demo.qmd`: Source Quarto doc using example data
-- `quarto-docker-demo.pdf` / `.html`: Rendered outputs
-- `renv.lock`: Package versions
-- `.dockerignore`, `.gitignore`: Clean up what gets copied or committed
-- `Dockerfile`: Builds the containerized RStudio + Quarto environment
+---
 
-## 💡 Reproducibility Notes
+## 📁 Repository Contents
 
-This project uses:
-- `rocker/rstudio` as the base image
-- Quarto installed in the image
-- R packages installed via `renv` and `install.packages()`
-- Outputs generated with `quarto render`
+- `quarto-docker-demo.qmd` — Example Quarto doc using `mtcars`
+- `quarto-docker-demo.html` / `.pdf` — Rendered outputs
+- `Dockerfile` — Builds the RStudio + Quarto + TinyTeX environment
+- `.dockerignore` / `.gitignore` — Keep junk out of the image/repo
+- *(Optional)* `renv.lock` — Pin package versions if you add `renv`
 
-To ensure complete reproducibility, version tags can be used for the Docker image and all packages are pinned using `renv.lock`.
+---
+
+## 🔄 Reproducibility & Versioning Tips
+
+- Freeze an image for a paper/release:
+  ```bash
+  docker tag quarto-docker-demo marcusharrisuconn/quarto-docker-demo:v0.1
+  docker push marcusharrisuconn/quarto-docker-demo:v0.1
+  ```
+- Keep code/data evolving in GitHub; rebuild/push the image only when the **environment** (packages/system deps) changes.
+
+---
+
+## 🧹 Stop / Remove Containers & Images
+
+```bash
+docker stop rstudio-demo
+docker rm rstudio-demo
+```
+
+Free space by removing the image:
+
+```bash
+docker rmi quarto-docker-demo
+```
+
+---
 
 ## 📦 Requirements
 
-- Docker (Desktop or CLI)
-- macOS (Intel or Apple Silicon), Windows, or Linux
+- Docker Desktop (WSL2 backend on Windows)
+- macOS (Intel or Apple Silicon), Windows 10/11, or Linux
+- Internet for first-time builds/pulls
 
-## 🔁 Updating the DockerHub Image
+---
 
+## 🔧 Maintainer Notes: Update the DockerHub Image
+
+Only the image owner/collaborators need this. Regular users just `docker pull`.
+
+```bash
 docker login
-docker tag quarto-docker-demo marcusharrisuconn/quarto-docker-demo
-docker push marcusharrisuconn/quarto-docker-demo
+docker build -t quarto-docker-demo .
+docker tag quarto-docker-demo marcusharrisuconn/quarto-docker-demo:latest
+docker push marcusharrisuconn/quarto-docker-demo:latest
+```
 
 
-## 🤝 Credits
+## 🙌 Credits
 
-Created by Marcus Harris, UConn  
-For demonstrating reproducible R and Quarto workflows using Docker.
+Created by Marcus Harris (UConn) to demonstrate a reproducible Quarto + R workflow using Docker.
+
