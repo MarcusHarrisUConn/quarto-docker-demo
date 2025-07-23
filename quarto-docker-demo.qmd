@@ -1,0 +1,15 @@
+---
+title: "quarto-docker-demo"
+format: 
+  html:
+      toc: true 
+  pdf: 
+      toc: true 
+---
+
+## Summary of `mtcars` dataset
+
+```{r}
+
+summary(mtcars)
+```
