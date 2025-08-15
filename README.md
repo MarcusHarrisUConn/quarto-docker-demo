@@ -1,3 +1,5 @@
+For instructions on how to reproduce the files in this repo, use this link: https://github.com/MarcusHarrisUConn/quarto-docker-demo/blob/main/Instructions.md
+
 # Quarto Docker Demo
 
 A minimal, reproducible R + Quarto workflow packaged in Docker. Run RStudio Server in your browser, render to HTML/PDF, and share the exact environment across Windows, macOS, and Linux.
